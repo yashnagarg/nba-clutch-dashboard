@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 #loading the csv file
 def load_data(path='datasets/nbastatsv3_2025.csv'):
@@ -6,8 +7,10 @@ def load_data(path='datasets/nbastatsv3_2025.csv'):
     return df
 
 #converting clock in csv file to seconds
-def parse_clock(df):
+#using pd.DataFrame helps debug better
+def parse_clock(df: pd.DataFrame)->pd.DataFrame:
     #format of the clock is PT11M26.00S
+    df=df.copy() #to avoid modifying the original dataframe
     df['minutes']=df['clock'].str.extract(r'PT(\d+)M').astype(float)
     df['seconds']=df['clock'].str.extract(r'M(\d+\.\d+)S').astype(float)
     #did  26.00 seconds instead of 26 seconds for greater precision later on when calculating clutch shots for end minute
@@ -15,7 +18,7 @@ def parse_clock(df):
     return df
 
 #adding shot type because freethrows are not considered fieldgoals and are imp for clutch shots as well
-def add_shot_type(df):
+def add_shot_type(df:pd.DataFrame)-> pd.DataFrame:
     df['is_FG']=df['isFieldGoal']==1 #get 2pt/3pt shot
     df['is_FT']=df['actionType']=='Free Throw' #get 1pt shot
     df['points']=0
@@ -24,7 +27,7 @@ def add_shot_type(df):
     return df
 
 #calculating clutch shot aka in the last 5 minutes of the game and the score difference is <= 5 points
-def computer_clutch(df):
-    
+def computer_clutch(df: pd.DataFrame)->pd.DataFrame:
+
     return df
     
