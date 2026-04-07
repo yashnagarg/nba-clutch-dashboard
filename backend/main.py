@@ -60,5 +60,42 @@ def compute_clutch(df: pd.DataFrame, time_threshold: float=300, margin_threshold
     df['clutch']=clutch_time & clutch_score #shot is a clutch shot if within clutch time and clutch score difference
     return df
 
+#vectorized way to compute fire aka hot streaks of players for faster computation than loops
+def compute_fire(df:pd.DataFrame, hot_threshold: int=3)->pd.DataFrame:
+    """
+    hot_threshold: number of consecutive shots made to be considered a hot streak
+                default is 3 for a hot streak of 3 or more consecutive shots made
 
+    didn’t just measure streak length, also measured how frequently players enter a ‘hot state’, making the model more representative of real in-game momentum
+
+    calculates FG streaks made consecutively by each player per game
+    the streak resets on any miss 
+
+    new columns added
+    'made': boolean indicating whether the shot was made or not
+    'streak_group': a unique identifier for each streak of made shots by a player in a game between two misses
+    'heat_streak_length': the length of the current streak of made shots for each shot
+    'is_hot': boolean indicating whether the current shot is part of a hot streak (streak length >= hot_threshold)
+
+    """
+    fg_df=df[df['is_FG']].copy()
+    fg_df=fg_df.sort_values(
+        by=['teamId','playerId','period','time_remaining'],
+        ascending=[True,True,True,False])
+    fg_df['made']=fg_df['shotResult'].str.lower()=='made'
+
+    #vectorized way to compute streaks
+    fg_df['streak_group']=(
+        (~fg_df['made'])
+        .groupby([fg_df['gameId'],fg_df['playerId']]).cumsum())
+    
+    fg_df['heat_streak_length']=(fg_df.
+                                 groupby(['gameId','playerId','streak_group'])['made']
+                                 .cumsum())
+    
+    fg_df['is_hot']=fg_df['heat_streak_length']>=hot_threshold
+    
+    return fg_df
+
+    
     
