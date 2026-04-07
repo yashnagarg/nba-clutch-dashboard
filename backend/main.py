@@ -66,7 +66,7 @@ def compute_fire(df:pd.DataFrame, hot_threshold: int=3)->pd.DataFrame:
     hot_threshold: number of consecutive shots made to be considered a hot streak
                 default is 3 for a hot streak of 3 or more consecutive shots made
 
-    didn’t just measure streak length, also measured how frequently players enter a ‘hot state’, making the model more representative of real in-game momentum
+    does not just measure streak length, also measures how frequently players enter a ‘hot state’, making the model more representative of real in-game momentum
 
     calculates FG streaks made consecutively by each player per game
     the streak resets on any miss 
@@ -85,17 +85,79 @@ def compute_fire(df:pd.DataFrame, hot_threshold: int=3)->pd.DataFrame:
     fg_df['made']=fg_df['shotResult'].str.lower()=='made'
 
     #vectorized way to compute streaks
+    #increments everytime there is a miss (~x) and cumsum to get unique streak groups for each player in each game
     fg_df['streak_group']=(
-        (~fg_df['made'])
-        .groupby([fg_df['gameId'],fg_df['playerId']]).cumsum())
+        fg_df.groupby(['gameId','playerId'])['made']
+        .transform(lambda x: (~x).cumsum()))
     
+    #calculates cumulative sum(length) of made shots in each streak group 
     fg_df['heat_streak_length']=(fg_df.
                                  groupby(['gameId','playerId','streak_group'])['made']
-                                 .cumsum())
+                                 .transform('cumsum'))
     
     fg_df['is_hot']=fg_df['heat_streak_length']>=hot_threshold
-    
+
     return fg_df
 
+def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
+    """
+    combines clutch performance from compute_clutch and hot streaks from compute_fire to calculate a normalised 'fire_score'(0.0-1.0)
+
+    components of the fire score(all normalised to 0.0-1.0):
+    -clutch_points: points scored in clutch situations (last 5 minutes of the game and score difference <= 5 points)
+    -clutch_fg_pct: field goal percentage in clutch situations 
+    -avg_heat: avg streak length of hot streaks for each player in each game(how hot a player gets)
+    -hot_rate: fraction of fg attempts while 'is_hot' (how often/consistently a player gets hot)
+
+    shot difficulty or complexity is not taken into account in this model,
+    could be added in the future by incorporating features like shot distance, defender proximity, etc. to further refine the fire score
+     + make it more representative of a player's performance under pressure.
+    """
+    clutch_df=df[df['clutch'] & df['is_FG']]
+
+    #aggregate clutch points and attempts for each player under pressure/clutch situations
+    clutch_stats=clutch_df.groupby('playerId').agg(
+        clutch_points=('points','sum'),
+        clutch_attempts=('is_FG','count'))
     
-    
+    #taking into account only successful clutch shots for the FG% 
+    made_clutch=clutch_df[clutch_df['shotResult'].str.lower()=='made']
+    #gives us the count of the total clutch shots made by each player
+    clutch_made=made_clutch.groupby('playerId').size().rename('clutch_made')
+
+    #calculating the clutch FG% for each player
+    clutch_stats=clutch_stats.join(clutch_made, on='playerId', how='left').fillna(0)
+    clutch_stats['clutch_fg_pct']=(clutch_stats['clutch_made']/clutch_stats['clutch_attempts'].replace(0, np.nan)).round(3) #avoid division by zero
+
+    #aggregate hot streak stats for each player
+    heat_stats=fg_df.groupby('playerId').agg(
+        avg_heat=('heat_streak_length','mean'),
+        max_heat=('heat_streak_length','max'),
+        hot_rate=('is_hot','mean')
+    )
+
+    #combine clutch and hot streak stats into a single dataframe
+    combined=clutch_stats.join(heat_stats,on='playerId',how='inner')
+
+    #normalising the components to a 0.0-1.0 scale
+    components=['clutch_points','clutch_fg_pct','avg_heat','hot_rate']
+
+    for column in components:
+        column_min=combined[column].min()
+        column_max=combined[column].max()
+        if column_max>column_min:
+            combined[f'{column}_norm']=(combined[column]-column_min)/(column_max-column_min)
+        else:
+            combined[f'{column}_norm']=0.0  #all values are same thus 0.0 normalisation
+
+    #calculating fire score = average of the normalised components
+    combined['fire_score']=combined[[f'{col}_norm' for col in components]].mean(axis=1).round(3)
+
+    #highest fire score on top thus descending order
+    return combined.sort_values(by='fire_score', ascending=False)
+
+
+
+
+
+
