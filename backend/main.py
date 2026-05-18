@@ -218,7 +218,7 @@ def get_shot_chart_data(df: pd.DataFrame, fg_df: pd.DataFrame,personId:int)->pd.
 
 def streak_hot_rate_per_game(fg_df:pd.DataFrame,df: pd.DataFrame,personId:int)->pd.DataFrame:
     """
-        returns
+        returns overall vs clutch hot streak performance for each game for a given playerId to visualise the relationship between hot streaks and clutch performance across different games
     """
     player_fg=fg_df[fg_df['personId']==personId].copy()
 
@@ -286,8 +286,8 @@ if __name__=="__main__":
     print("\nCalculating fire scores...")
     rankings=compute_fire_score(df, fg_df)
     # Run this first to see the distribution
-    print(rankings['clutch_attempts'].describe())
-    print(rankings['clutch_attempts'].value_counts().sort_index().head(20))
+    #print(rankings['clutch_attempts'].describe())
+    #print(rankings['clutch_attempts'].value_counts().sort_index().head(20))
     print("\nTop 10 fire scores:")
     print(rankings[['playerName','fire_score','clutch_points','clutch_fg_pct','clutch_hot_rate','clutch_and_hot','overall_hot_rate']].head(10).to_string())
 
