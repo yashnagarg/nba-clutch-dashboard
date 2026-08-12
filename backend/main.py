@@ -101,8 +101,8 @@ def compute_fire(df:pd.DataFrame, hot_threshold: int=3)->pd.DataFrame:
 
     return fg_df
 
-def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
-    """
+"""def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
+    ""
     combines clutch performance + hot behaviour to calculate a normalised 'fire_score'(0.0-1.0)
     This answers: who gets hot and stays hot when the game is actually on the line?(during clutch situations)
 
@@ -119,7 +119,7 @@ def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
     'is_hot' and 'heat_streak_length' are calculated for all shots in the compute_fire function,
     but for the fire score we will only consider the hot streaks during clutch situations to better capture real performance under pressure.
     - they were calculated for all shots to get an insight to the player's momentum throughout the game which carries into clutch situations
-    """
+    ""
     
     clutch_fg=df[df['clutch'] & df['is_FG']][['actionId','gameId','personId','shotResult','is_FG','points']].merge(fg_df[['actionId','gameId','personId','made','heat_streak_length','is_hot']], on=['actionId','gameId','personId'], how='left')
     clutch_fg['is_hot']=clutch_fg['is_hot'].fillna(False) #shots that are not field goals will have NaN for is_hot, filling them with False
@@ -166,7 +166,7 @@ def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
     personId_to_name=df[['personId','playerNameI']].drop_duplicates().set_index('personId')['playerNameI']
 
     combined['playerName']=combined.index.map(personId_to_name)
-    MIN_CLUTCH_ATTEMPTS = 22  # tuned this according to my distribution
+    MIN_CLUTCH_ATTEMPTS = 10  # tuned this according to my distribution
     
     combined = combined[combined['clutch_attempts'] >= MIN_CLUTCH_ATTEMPTS].copy()
     #normalising the components to a 0.0-1.0 scale
@@ -184,7 +184,104 @@ def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame)->pd.DataFrame:
     combined['fire_score']=combined[[f'{col}_norm' for col in components]].mean(axis=1).round(3)
 
     #highest fire score on top thus descending order
-    return combined.sort_values(by='fire_score', ascending=False)
+    return combined.sort_values(by='fire_score', ascending=False)"""
+
+def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame,min_attempts:int=55)->pd.DataFrame:
+    """
+    Calculates a normalized Fire Score (0.0-1.0) for each player.
+
+    Fire Score measures field-goal performance and hot-streak behavior
+    during clutch situations.
+
+    Clutch definition:
+    - Last 5 minutes of the 4th quarter or OT
+    - Score difference <= 5 points
+
+    Fire Score components:
+    - 30% Clutch FG%
+    - 25% Clutch Hot Rate
+    - 25% Clutch Average Streak
+    - 20% Clutch FG Points
+
+    Free throws are intentionally excluded from the Fire Score because
+    they are not live field-goal attempts and do not involve the same
+    defensive pressure or shot-creation component.
+
+    min_attempts:
+        Minimum number of clutch field-goal attempts required for a player
+        to appear in the final rankings.
+
+        IMPORTANT:
+        The minimum-attempt filter is applied AFTER normalization and
+        Fire Score calculation. This keeps Fire Scores stable when the
+        minimum-attempt threshold changes which was an issue in the previous version of the code.
+    """
+    clutch_fg=df[df['clutch'] & df['is_FG']][['actionId','gameId','personId','shotResult','is_FG','points']].merge(fg_df[['actionId','gameId','personId','made','heat_streak_length','is_hot']], on=['actionId','gameId','personId'], how='left')
+    clutch_fg['is_hot']=clutch_fg['is_hot'].fillna(False) #shots that are not field goals will have NaN for is_hot, filling them with False
+    clutch_fg['heat_streak_length']=clutch_fg['heat_streak_length'].fillna(0).astype(int) #shots that are not field goals will have NaN for heat_streak_length, filling them with 0 and converting to int 
+
+     #aggregate clutch points and attempts for each player under pressure/clutch situations
+    clutch_stats=clutch_fg.groupby('personId').agg(
+                    clutch_points=('points','sum'),
+                    clutch_attempts=('is_FG','count'),
+                    clutch_made_count=('made','sum'),
+                    #counted shots were hot during clutch situations
+                    clutch_and_hot=('is_hot','sum'),
+                    #% of shots that were hot during clutch situations out of total clutch shots attempted by each player
+                    clutch_hot_rate=('is_hot','mean'),
+                    #avg streak length during clutch situations for each player
+                    clutch_avg_streak=('heat_streak_length','mean'),
+                    #max streak length during clutch situations for each player
+                    clutch_max_streak=('heat_streak_length','max')
+                    )
+
+    clutch_stats['clutch_fg_pct']=(clutch_stats['clutch_made_count']/clutch_stats['clutch_attempts'].replace(0, np.nan)).round(3) #avoid division by zero
+
+    #aggregate hot streak stats for each player
+    overall_heat_stats=fg_df.groupby('personId').agg(
+            overall_avg_streak=('heat_streak_length','mean'),
+            overall_max_streak=('heat_streak_length','max'),
+            overall_hot_rate=('is_hot','mean')
+        )
+
+    #combine clutch and hot streak stats into a single dataframe
+    combined=clutch_stats.join(overall_heat_stats,on='personId',how='inner')
+    
+    #mapping player id to player name, taken the playerNameI column to get the initial for the first name as well for better readability
+    personId_to_name=df[['personId','playerNameI']].drop_duplicates().set_index('personId')['playerNameI']
+    
+    combined['playerName']=combined.index.map(personId_to_name)
+
+    #normalising the components to a 0.0-1.0 scale
+    components=['clutch_points','clutch_fg_pct','clutch_hot_rate','clutch_avg_streak']
+    
+    for column in components:
+        column_min=combined[column].min()
+        column_max=combined[column].max()
+        if column_max>column_min:
+            combined[f'{column}_norm']=(combined[column]-column_min)/(column_max-column_min)
+        else:
+            combined[f'{column}_norm']=0.0  #all values are same thus 0.0 normalisation
+
+    #calculating fire score = weighted average of the normalised components
+    WEIGHTS={
+        'clutch_fg_pct_norm':0.30,
+        'clutch_hot_rate_norm':0.25,
+        'clutch_avg_streak_norm':0.25,
+        'clutch_points_norm':0.20
+    }
+
+    combined['fire_score']=(
+        combined['clutch_fg_pct_norm']*WEIGHTS['clutch_fg_pct_norm']+
+        combined['clutch_hot_rate_norm']*WEIGHTS['clutch_hot_rate_norm']+
+        combined['clutch_avg_streak_norm']*WEIGHTS['clutch_avg_streak_norm']+
+        combined['clutch_points_norm']*WEIGHTS['clutch_points_norm']
+    ).round(3)
+
+    #min attempts filter applied AFTER normalization and Fire Score calculation to keep Fire Scores stable when the minimum-attempt threshold changes
+    combined = combined[combined['clutch_attempts'] >= min_attempts].copy()
+
+    return combined.sort_values(by='fire_score', ascending=False)          
 
 def get_shot_chart_data(df: pd.DataFrame, fg_df: pd.DataFrame,personId:int)->pd.DataFrame:
     """

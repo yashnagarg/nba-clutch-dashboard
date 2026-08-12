@@ -1,10 +1,8 @@
-from flask import Flask
+from fastapi import FastAPI
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route("/")
+
+@app.get("/")
 def home():
-    return "Backend is working!"
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return {"message": "NBA Clutch API is running"}

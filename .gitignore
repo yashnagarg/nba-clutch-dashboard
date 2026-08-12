@@ -1,0 +1,22 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+#python cache
+__pycache__/
+*.py[cod]
+
+#virtual environment
+venv/
+env/
+.venv/
+
+#datasets
+backend/datasets/
+
+#secrets
+.env
+
+#vscode
+.vscode/
+
+#OS
+.DS_Store
+Thumbs.db
