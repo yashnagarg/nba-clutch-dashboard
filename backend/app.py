@@ -38,7 +38,7 @@ def get_leaderboard(limit: int=Query(default=10,ge=1,le=100),min_attempts:int=Qu
     }
 
 @app.get("/players/{person_id}")
-def get_player_dataI(person_id: int):
+def get_player_data(person_id: int):
     """returns the player data for the given person_id"""
     if person_id not in rankings_full.index:
         raise HTTPException(status_code=404,detail=f"Player with personId {person_id} not found")
@@ -64,7 +64,19 @@ def get_player_dataI(person_id: int):
         
     }
 
+@app.get("/shotchart/{person_id}")
+def get_shot_chart(person_id: int):
+    """returns the shot chart data for the given person_id"""
+    shots=get_shot_chart_data(df,fg_df,person_id)
+    if shots.empty:
+        raise HTTPException(status_code="404",detail=f"No shot chart data found for {person_id}")
 
+    shots['clutch']=shots['clutch'].astype(bool)
+    shots['is_hot']=shots['is_hot'].astype(bool)
+    shots['made']=shots['made'].astype(bool)
+    shots['clutch_hot_shots']=shots['clutch_hot_shots'].astype(bool)
+    return shots.to_dict(orient='records')
+    
 
 def home():
     return {"message": "NBA Clutch API is running"}
