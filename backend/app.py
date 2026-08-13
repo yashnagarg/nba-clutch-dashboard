@@ -76,7 +76,17 @@ def get_shot_chart(person_id: int):
     shots['made']=shots['made'].astype(bool)
     shots['clutch_hot_shots']=shots['clutch_hot_shots'].astype(bool)
     return shots.to_dict(orient='records')
-    
+
+@app.get("/streaks/{person_id}")
+def get_streaks(person_id:int):
+    """returns the streaks data for the given person_id"""
+    streak_data=streak_hot_rate_per_game(df,fg_df,person_id)
+    if streak_data.empty:
+        raise HTTPException(status_code="404",detail=f"No streak data found for {person_id}")
+    return streak_data.to_dict(orient='records')
+
+@app.get("/compare")
+
 
 def home():
     return {"message": "NBA Clutch API is running"}
