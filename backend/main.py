@@ -186,12 +186,11 @@ def compute_fire(df:pd.DataFrame, hot_threshold: int=3)->pd.DataFrame:
     #highest fire score on top thus descending order
     return combined.sort_values(by='fire_score', ascending=False)"""
 
-def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame,min_attempts:int=55)->pd.DataFrame:
+def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame,min_attempts:int=15)->pd.DataFrame:
     """
     Calculates a normalized Fire Score (0.0-1.0) for each player.
 
-    Fire Score measures field-goal performance and hot-streak behavior
-    during clutch situations.
+    fire score measures field-goal performance and hot-streak behavior during clutch situations.
 
     Clutch definition:
     - Last 5 minutes of the 4th quarter or OT
@@ -201,20 +200,18 @@ def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame,min_attempts:int=55)-
     - 30% Clutch FG%
     - 25% Clutch Hot Rate
     - 25% Clutch Average Streak
-    - 20% Clutch FG Points
+    - 20% Clutch FG Points (not 25% because total point depends hugely on amt of time played and is less representative than fg% and hot streaks)
 
     Free throws are intentionally excluded from the Fire Score because
     they are not live field-goal attempts and do not involve the same
     defensive pressure or shot-creation component.
 
     min_attempts:
-        Minimum number of clutch field-goal attempts required for a player
-        to appear in the final rankings.
+        Minimum number of clutch field-goal attempts required for a player to appear in the final rankings.
 
         IMPORTANT:
-        The minimum-attempt filter is applied AFTER normalization and
-        Fire Score calculation. This keeps Fire Scores stable when the
-        minimum-attempt threshold changes which was an issue in the previous version of the code.
+        The minimum-attempt filter is applied AFTER normalization and Fire Score calculation. This keeps Fire Scores stable when the
+        minimum-attempt threshold changes which was an issue in the previous version of the code(commented before).
     """
     clutch_fg=df[df['clutch'] & df['is_FG']][['actionId','gameId','personId','shotResult','is_FG','points']].merge(fg_df[['actionId','gameId','personId','made','heat_streak_length','is_hot']], on=['actionId','gameId','personId'], how='left')
     clutch_fg['is_hot']=clutch_fg['is_hot'].fillna(False) #shots that are not field goals will have NaN for is_hot, filling them with False
@@ -239,6 +236,7 @@ def compute_fire_score(df:pd.DataFrame, fg_df:pd.DataFrame,min_attempts:int=55)-
 
     #aggregate hot streak stats for each player
     overall_heat_stats=fg_df.groupby('personId').agg(
+            overall_fg_pct=('made','mean'),
             overall_avg_streak=('heat_streak_length','mean'),
             overall_max_streak=('heat_streak_length','max'),
             overall_hot_rate=('is_hot','mean')
@@ -319,13 +317,14 @@ def streak_hot_rate_per_game(fg_df:pd.DataFrame,df: pd.DataFrame,personId:int)->
     """
     player_fg=fg_df[fg_df['personId']==personId].copy()
 
-    clutch_flags=df[(df['personId']==personId) & (df['is_FG'])][['gameId','actionId','clutch']]
+    clutch_flags=df[(df['personId']==personId) & (df['is_FG'])][['gameId','actionId','clutch']].copy()
+    clutch_flags=clutch_flags.rename(columns={'clutch':'clutch_flag'}) #renaming the column to avoid confusion with the 'clutch' column in player_fg
 
     player_fg=player_fg.merge(clutch_flags,on=['gameId','actionId'],how='left')
 
     
-    player_fg['clutch_present']=player_fg['clutch'].notna()
-    player_fg['clutch']=player_fg['clutch'].fillna(False)
+    player_fg['clutch_present']=player_fg['clutch_flag'].notna()
+    player_fg['clutch']=player_fg['clutch_flag'].fillna(False)
 
     overall=player_fg.groupby('gameId').agg(
         max_streak=('heat_streak_length','max'),
@@ -336,7 +335,7 @@ def streak_hot_rate_per_game(fg_df:pd.DataFrame,df: pd.DataFrame,personId:int)->
     clutch_only=player_fg[player_fg['clutch']].groupby('gameId').agg(
         clutch_max_streak=('heat_streak_length','max'),
         clutch_hot_rate=('is_hot','mean'),
-        clutch_fgattempts=('clutch','size')
+        clutch_fgattempts=('clutch_flag','size')
     )
 
     result=(overall.join(clutch_only,how='left').fillna({'clutch_max_streak':0,'clutch_hot_rate':0.0,'clutch_fgattempts':0}).round({'overall_hot_rate':3,'clutch_hot_rate':3}).reset_index())
