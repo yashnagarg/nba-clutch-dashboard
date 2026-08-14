@@ -1,0 +1,58 @@
+*,*::before, *::after{
+  box-sizing: border-box;
+  margin: 0;
+  padding:0;
+}
+
+:root{
+  --bg:#0F0E0D;
+  --bg-card: #233D4D;
+  --bg-card2: #1b303d;
+  --border: #344f60;
+  --text: #EAECF0;
+  --text-muted:#ACB5BF;
+  --text-sub:#D5DEF0;
+  --orange: #FE7F2D;
+  --orange-dim: #D96520;
+  --orange-glow: rgba(249, 115, 22, 0.15);
+  --orange-strong: rgba(249, 115, 22, 0.3);
+  --made: #18DB60;
+  --made-hot: #f97316;
+  --made-both: #fbbf24;
+  --missed: #3a3530;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-family: 'Helvetica Neue', Arial, system-ui, sans-serif;
+}
+
+select,button,input{
+  font-family:inherit;
+}
+
+::-webkit-scrollbar{
+  width: 4px;
+}
+::-webkit-scrollbar-track{
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb{
+  background:var(--border);
+  border-radius: 2px;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(6px);}
+  to {opacity:1;transform:translateY(0);}
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+
+.fade-in{
+  animation: fadeIn 0.27s ease forwards;
+}
