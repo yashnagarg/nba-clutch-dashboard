@@ -14,5 +14,13 @@ async function get(path)
 
 //function to handle all the get requests
 export const api={
+    getPlayers: ()=> get(`/players`),
+    getLeaderboard: (limit=10, minattempts=15)=> get(`/leaderboard?limit=${limit}&min_attempts=${minattempts}`),
+
+    getPlayer: (personId)=> get(`/players/${[personId]}`),
+    getShotChart: (personId)=> get(`/shotchart/${personId}`),
+    getStreaks:(personId)=> get(`/streaks/${personId}`),
+    
+    compare:(id1,id2)=> get(`/compare?ids=${id1},${id2}`)
 
 }
