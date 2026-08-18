@@ -10,5 +10,16 @@ import ComparePanel from './components/ComparePanel.jsx';
 
 export default function App()
 {
-    const [players, ]
+    const [players, setPlayers]=useState([]);
+    const [selectedId, setSelectedId]=useState(null);
+    const [selectedName, setSelectedName]=useState('');
+    const [playerStats, setPlayerStats]=useState(null);
+    const [shots, setShots]=useState([]);
+    const [streaks, setStreaks]=useState([]);
+    const [loading, setLoading]=useState(false);
+    const [error, setError]=useState(null);
+    const [activeTab, setActiveTab]=useState('overview');
+
+    
+
 }
