@@ -21,5 +21,45 @@ export default function App()
     const [activeTab, setActiveTab]=useState('overview');
 
     
+    //mount once so all players are loaded into the dropdown search
+    useEffect(() => {
+        api.getPlayers().then(setPlayers).catch((err) => setError(err));
+    }, []);
 
+    //fetch player stats when the selectedId changes
+    useEffect(()=>
+    {
+        if(!selectedId) return;
+        setLoading(true);
+        setError(null);
+        setActiveTab('overview');
+
+        Promise.all([
+            api.getPlayers(selectedId),
+            api.getShotChart(selectedId),
+            api.getStreaks(selectedId),
+        ])
+        .then(([statsData, shotData, streakData])=>
+        {
+            setPlayerStats(statsData);
+            setShots(shotData);
+            setStreaks(streakData);
+        })
+        .catch(err=>setError(err.message))
+        .finally(()=>setLoading(false))
+    },[selectedId]);
+
+    //function to handle player selection from the sidebar
+    function handlePlayerSelect(playerId,playerName)
+    {
+        setSelectedId(playerId);
+        setSelectedName(playerName);
+    }
+    
+    const tabs=['overview','shot chart', 'compare' ];
+
+    return(
+        
+
+    );
 }
