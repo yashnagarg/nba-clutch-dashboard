@@ -75,14 +75,57 @@ export default function App()
 }*/
 export default function App() {
   return (
-    
     <>
-    <div style={{ background: 'var(--bg)', height: '100vh', display: 'flex' }} />
-    <div style={{width:"260px",background: "var(--bg-card)",borderRight: "1px solid var(--border)"}} />
-    <div style={{padding: "16px"}}/>
-    <div style={{fontSize:"15px", fontWeight:"700",color:"var(--orange)",letterSpacing:"0.08em"}}>FIRE SCORE</div>
-    
-    </>
+      <div
+        style={{
+          background: 'var(--bg)',
+          height: '100vh',
+          display: 'flex',
+        }}
+      >
+        <div
+          style={{
+            width: '260px',
+            background: 'var(--bg-card)',
+            borderRight: '1px solid var(--border)',
+          }}
+        >
+          <div style={{ padding: '16px' }}>
+            <div
+              style={{
+                fontSize: '15px',
+                fontWeight: '700',
+                color: 'var(--orange)',
+                letterSpacing: '0.08em',
+              }}
+            >
+              FIRE SCORE
+            </div>
 
-  )
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginTop: '2px',
+              }}
+            >
+              NBA Clutch + Heat Check | 2024-25
+            </div>
+          </div>
+        </div>
+
+        <main style={{ flex: 1, padding: '24px 28px' }}>
+            <h1 style={{fontSize:"18px",
+                    fontWeight:"600",
+                    color:"var(--text"
+            }}> NBA Clutch + Heat Check</h1>
+            <p style={{
+                fontSize:"12px",
+                color:"var(--text-muted)",
+                marginTop:"4px"
+            }}>2024-25 season | select a player to begin</p>
+        </main>
+      </div>
+    </>
+  );
 }
