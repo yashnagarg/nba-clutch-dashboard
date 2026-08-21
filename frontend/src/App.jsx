@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+/*import { useState, useEffect } from "react";
 import { api } from './api.js';
 import Sidebar from './components/Sidebar.jsx';
 import PlayerHeader from './components/PlayerHeader.jsx';
@@ -59,7 +59,30 @@ export default function App()
     const tabs=['overview','shot chart', 'compare' ];
 
     return(
-        
+        <>
+        <div style={{display: "flex", height: "100vh", overflow:"hidden"}}/>
 
+        <Sidebar
+        players={players}
+        selectedId={selectedId}
+        onSelect={handlePlayerSelect}
+        />
+        <main style={{flex:1,overflow:"auto",padding: "24 px 28px"}}/>
+
+    
+        </>
     );
+}*/
+export default function App() {
+  return (
+    
+    <>
+    <div style={{ background: 'var(--bg)', height: '100vh', display: 'flex' }} />
+    <div style={{width:"260px",background: "var(--bg-card)",borderRight: "1px solid var(--border)"}} />
+    <div style={{padding: "16px"}}/>
+    <div style={{fontSize:"15px", fontWeight:"700",color:"var(--orange)",letterSpacing:"0.08em"}}>FIRE SCORE</div>
+    
+    </>
+
+  )
 }
