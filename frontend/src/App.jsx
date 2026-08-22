@@ -1,5 +1,6 @@
-/*import { useState, useEffect } from "react";
-import { api } from './api.js';
+import { useState, useEffect } from "react";
+import { api } from '../api';
+/*
 import Sidebar from './components/Sidebar.jsx';
 import PlayerHeader from './components/PlayerHeader.jsx';
 import StatCards from './components/StatCards.jsx';
@@ -73,7 +74,15 @@ export default function App()
         </>
     );
 }*/
+
+
 export default function App() {
+    
+const [leaderboard, setLeaderboard]=useState([])
+
+useEffect(()=>{
+    api.getLeaderboard(20,50).then(data=> setLeaderboard(data.top_players)).catch(err=>console.error(err))
+},[])
   return (
     <>
       <div
@@ -113,29 +122,23 @@ export default function App() {
             </div>
           </div>
           <div style={{flex:1, overflowY:"auto", padding:'8px'}}>
-            {[
-                {name:'T. Maxey',score:0.399},
-                {name:'I. Zubac',score:0.387},
-                {name:'A. Edwards', score:0.387},
-                {name:'T. Jones',score:0.379},
-                {name:'J. Murray',score:0.376}
-            ].map((p,i)=>(
-                <div key={p.name} style={{
+            {leaderboard.map((p,i)=>(
+                <div key={p.playerName} style={{
                     display:'flex',alignItems:'center',gap:'8px', padding:'8px',borderRadius:'6px',cursor:'pointer',marginBottom:'2px'
                 }}>
                     <span style={{fontSize:'12px',color:'var(--text-muted)',width:'18px',textAlign:'right'}}>
                         {i+1}
                     </span>
                 <div style={{flex:1}}>
-                    <div style={{fontSize:'13px',color:'var(--text)'}}>{p.name}</div>
+                    <div style={{fontSize:'13px',color:'var(--text)'}}>{p.playerName}</div>
                     {/*progress bar*/}
                     <div style={{height:'30px',background:'var(--border)',borderRadius:'13px',marginTop:'4px',overflow:'hidden'}}>
-                        <div style={{height:'100%',background:'var(--orange)',borderRadius:'13px',width:`${Math.round(p.score*100)}%`}}/>
+                        <div style={{height:'100%',background:'var(--orange)',borderRadius:'13px',width:`${Math.round(p.fire_score*100)}%`}}/>
                         </div>
                 </div>
                 {/*score on the right*/}
                 <span style={{ fontSize:'12px',color:'var(--text-muted)'}}>
-                    {p.score.toFixed(2)}
+                    {p.fire_score.toFixed(2)}
                 </span>
                 </div>
             ))}
