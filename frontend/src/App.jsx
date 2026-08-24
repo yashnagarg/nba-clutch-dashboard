@@ -137,7 +137,7 @@ useEffect(()=>{
                         </div>
                 </div>
                 {/*score on the right*/}
-                <span style={{ fontSize:'12px',color:'var(--text-muted)'}}>
+                <span style={{ fontSize:'10px',color:'var(--text-muted)'}}>
                     {p.fire_score.toFixed(2)}
                 </span>
                 </div>
@@ -145,16 +145,29 @@ useEffect(()=>{
           </div>
         </div>
 
-        <main style={{ flex: 1, padding: '24px 28px' }}>
-            <h1 style={{fontSize:"18px",
-                    fontWeight:"600",
-                    color:"var(--text)"
-            }}> NBA Clutch + Heat Check</h1>
-            <p style={{
-                fontSize:"12px",
-                color:"var(--text-muted)",
-                marginTop:"4px"
-            }}>2024-25 season | select a player to begin</p>
+        <main style={{ flex: 1, padding: '24px 28px' , display:"flex",flexDirection:'column'}}>
+            {/*big heading*/}
+            <div style={{
+                flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px"
+            }}>
+                <div style={{ fontSize:"13px",color:"var(--orange)",letterSpacing:"0.2em",textTransform:"uppercase",fontWeight:"600"}}>
+                    2024-25 NBA Season
+                </div>
+                <h1 style={{
+                    fontSize:"66px",fontWeight:"800",color:"var(--text)",textAlign:"center",lineHeight:"1.1",letterSpacing:"-0.02em"
+                }}>
+                    NBA Clutch +<br />Heat Check
+                </h1>
+                <p style={{fontSize:"16px",color:"var(--text-muted)",textAlign:"center",maxWidth:"400px",lineHeight:"1.6"}}>
+                    Who gets hot when it matters? Fire Score ranks every player by clutch efficiency and shooting momentum.
+                </p>
+                <div style={{
+                    marginTop:"8px",fontSize:"13px",color:"var(--text-sub)",display:"flex",alignItems:"center",gap:"8px"
+                }}>
+                    <span style={{color:"var(--orange)"}}>←</span>
+                    Select a player from the leaderboard to begin
+                </div>
+            </div>
         </main>
       </div>
     </>
