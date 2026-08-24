@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from '../api';
+import { motion } from 'framer-motion'
 /*
 import Sidebar from './components/Sidebar.jsx';
 import PlayerHeader from './components/PlayerHeader.jsx';
@@ -80,7 +81,7 @@ export default function App() {
     
 const [leaderboard, setLeaderboard]=useState([])
 
-useEffect(()=>{
+useEffect(()=>{ 
     api.getLeaderboard(20,50).then(data=> setLeaderboard(data.top_players)).catch(err=>console.error(err))
 },[])
   return (
@@ -132,13 +133,16 @@ useEffect(()=>{
                 <div style={{flex:1}}>
                     <div style={{fontSize:'13px',color:'var(--text)'}}>{p.playerName}</div>
                     {/*progress bar*/}
-                    <div style={{height:'30px',background:'var(--border)',borderRadius:'13px',marginTop:'4px',overflow:'hidden'}}>
-                        <div style={{height:'100%',background:'var(--orange)',borderRadius:'13px',width:`${Math.round(p.fire_score*100)}%`}}/>
+                    <div style={{height:'27px',background:'var(--border)',borderRadius:'8px',marginTop:'4px',overflow:'hidden'}}>
+                        <motion.div initial={{width:0}}
+                        animate={{width:`${Math.round(p.fire_score*100)}%`}} 
+                        transition={{duration:0.7,ease:'easeInOut'}} 
+                        style={{height:'100%',background:'var(--orange)',borderRadius:'8px'}}/>
                         </div>
                 </div>
                 {/*score on the right*/}
                 <span style={{ fontSize:'10px',color:'var(--text-muted)'}}>
-                    {p.fire_score.toFixed(2)}
+                    {p.fire_score.toFixed(3)}
                 </span>
                 </div>
             ))}
@@ -151,16 +155,26 @@ useEffect(()=>{
                 flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px"
             }}>
                 <div style={{ fontSize:"13px",color:"var(--orange)",letterSpacing:"0.2em",textTransform:"uppercase",fontWeight:"600"}}>
-                    2024-25 NBA Season
+                    Exploring the 2024-25 NBA Season
                 </div>
-                <h1 style={{
-                    fontSize:"66px",fontWeight:"800",color:"var(--text)",textAlign:"center",lineHeight:"1.1",letterSpacing:"-0.02em"
+                <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",overflow:"visible"}}>
+                <motion.div  animate={{ scale: [1, 1.09, 1] }}  transition={{duration: 4,repeat: Infinity, ease: "easeInOut"}} style={{position:"absolute",width:"1200px",height:"800px",background:"radial-gradient(ellipse, rgba(254,127,45,0.15) 0%, transparent 65%)",pointerEvents:"none"}}/>
+                <motion.h1 initial={{opacity:0,y:100,scale:0.96}}
+                animate={{opacity:1,y:0,scale:1.12}} 
+                transition={{duration:1,ease:"easeInOut"}}
+                style={{
+                    fontSize:"117px",fontWeight:"800",color:"var(--text)",textAlign:"center",lineHeight:"1.1",letterSpacing:"-0.03em"
                 }}>
-                    NBA Clutch +<br />Heat Check
-                </h1>
-                <p style={{fontSize:"16px",color:"var(--text-muted)",textAlign:"center",maxWidth:"400px",lineHeight:"1.6"}}>
-                    Who gets hot when it matters? Fire Score ranks every player by clutch efficiency and shooting momentum.
-                </p>
+                    WHO GETS HOT<br />WHEN IT MATTERS?
+                </motion.h1> 
+                
+                </div>
+
+                <motion.p initial={{opacity:0,y:20}}
+                animate={{opacity:1,y:0}}
+                transition={{delay:"0.27",duration:"0.6",ease:"easeInOut"}} style={{fontSize:"17px",color:"var(--text-muted)",textAlign:"center",maxWidth:"480px",lineHeight:"1.6"}}>
+                    Quantifying how NBA players perform when the pressure rises.
+                </motion.p>
                 <div style={{
                     marginTop:"8px",fontSize:"13px",color:"var(--text-sub)",display:"flex",alignItems:"center",gap:"8px"
                 }}>
