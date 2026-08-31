@@ -128,7 +128,7 @@ useEffect(()=>{
           }}>
             <span style={{fontSize:"9px",color:"var(--text-muted)",letterSpacing:"0.1em",textTransform:"uppercase",width:"18px"}}>#</span>
             <span style={{ fontSize:"9px",color:"var(--text-muted)",letterSpacing:"0.1em",textTransform:"uppercase",flex:1}}>Player</span>
-            <span style={{ fontSize:"9px",color:"var(--text-muted)",letterSpacing:"0.1em",textTransform:"uppercase",width:"40px",textAlign:"right"}}>FS%</span>
+            <span style={{ fontSize:"9px",color:"var(--text-muted)",letterSpacing:"0.1em",textTransform:"uppercase",width:"40px",textAlign:"right"}}>FS</span>
             <span style={{ fontSize:"9px",color:"var(--text-muted)",letterSpacing:"0.1em",textTransform:"uppercase",width:"36px",textAlign:"right"}}>CL%</span>
 
 
@@ -187,7 +187,7 @@ useEffect(()=>{
         <main style={{ flex: 1, padding: '45px 28px' , display:"flex",flexDirection:'column'}}>
             {/*big heading*/}
             <div style={{
-                paddingLeft:"46px",flex:1,display:"flex",flexDirection:"column",alignItems:"left",justifyContent:"left",gap:"16px"
+                paddingLeft:"46px",flex:1,display:"flex",flexDirection:"column",alignItems:"left",justifyContent:"left",gap:"16px",overflow:"hidden"
             }}>
                 <div style={{ paddingLeft:"6px",fontSize:"14px",color:"var(--orange)",letterSpacing:"0.2em",textTransform:"uppercase",fontWeight:"600",marginTop:"10px"}}>
                     Exploring the 2024-25 NBA Season
