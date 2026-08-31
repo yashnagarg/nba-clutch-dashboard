@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600&display=swap');
 *,*::before, *::after{
   box-sizing: border-box;
   margin: 0;
@@ -6,8 +7,8 @@
 
 :root{
   --bg:#0F0E0D;
-  --bg-card: #233D4D;
-  --bg-card2: #1b303d;
+  --bg-card: #1B303D;
+  --bg-card2: #1c3f54;
   --border: #344f60;
   --text: #EAECF0;
   --text-muted:#ACB5BF;
@@ -20,13 +21,14 @@
   --made-hot: #f97316;
   --made-both: #fbbf24;
   --missed: #3a3530;
+  --display-font: 'Barlow Condensed','Helvetica Neue',sans-serif;
 }
 
 body{
   background:var(--bg);
   color:var(--text);
   min-height:100vh;
-  font-family: 'DieGrotesk', 'Helvetica Neue', system-ui, sans-serif;
+  font-family: 'Inter','Helvetica Neue', system-ui, sans-serif;
 }
 
 select,button,input{
