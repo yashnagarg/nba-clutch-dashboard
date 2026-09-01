@@ -80,6 +80,9 @@ export default function App()
 export default function App() {
     
 const [leaderboard, setLeaderboard]=useState([])
+const [selectedId, setSelectedId]=useState(null);
+const [selectedName, setSelectedName]=useState('');
+const [playerStats, setPlayerStats]=useState(null);
 
 useEffect(()=>{ 
     api.getLeaderboard(20,50).then(data=> setLeaderboard(data.top_players)).catch(err=>console.error(err))
@@ -136,7 +139,7 @@ useEffect(()=>{
           <div style={{flex:1, overflowY:"auto", padding:'8px'}}>
             {leaderboard.map((p,i)=>(
                 <div key={p.playerName} 
-                onClick={()=> console.log(p.personId,p.playerName)}
+                onClick={()=> {setSelectedId(p.personId); setSelectedName(p.playerName);}}
                 style={{
                     display:'flex',alignItems:'center',gap:'8px', padding:'10px 12px',borderRadius:'6px',cursor:'pointer',marginBottom:'2px',borderLeft:"3px solid transparent",transition:"all 0.15s"
                 }}
@@ -185,10 +188,11 @@ useEffect(()=>{
         </div>
 
         <main style={{ flex: 1, padding: '45px 28px' , display:"flex",flexDirection:'column'}}>
-            {/*big heading*/}
-            <div style={{
-                paddingLeft:"46px",flex:1,display:"flex",flexDirection:"column",alignItems:"left",justifyContent:"left",gap:"16px",overflow:"hidden"
-            }}>
+            { !selectedId ? (
+              //big heading
+                <div style={{
+                    paddingLeft:"46px",flex:1,display:"flex",flexDirection:"column",alignItems:"left",justifyContent:"left",gap:"16px",overflow:"hidden"
+                }}>
                 <div style={{ paddingLeft:"6px",fontSize:"14px",color:"var(--orange)",letterSpacing:"0.2em",textTransform:"uppercase",fontWeight:"600",marginTop:"10px"}}>
                     Exploring the 2024-25 NBA Season
                 </div>
@@ -233,6 +237,15 @@ useEffect(()=>{
                     Select a player from the leaderboard to begin
                 </div>
             </div>
+            ):(
+                
+                <div style={{color:"var(--orange)"}}>
+                    <h2 style={{ fontFamily:"var(--display-font)",fontSize:"32px",fontWeight:"800",marginBottom:"8px"}}>{selectedName}</h2>
+                    <p style={{ color:"var(--text-muted)",fontsize:"14px",marginBottom:"16px"}}>Dashboard coming next!!</p>
+                </div>
+            )
+            }
+            
         </main>
       </div>
     </>
